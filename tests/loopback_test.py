@@ -23,7 +23,12 @@ BUS_SPEEDS = [125, 500, 1000]
 def silent_panda_connect(serial):
   with open(os.devnull, "w") as devnull:
     with contextlib.redirect_stdout(devnull):
-      panda = Panda(serial)
+        while True:
+            try:
+                panda = Panda(serial)
+                break
+            except:
+                time.sleep(1)
   return panda
 
 def print_colored(text, color):

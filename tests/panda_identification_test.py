@@ -7,14 +7,19 @@ import contextlib
 from panda_jungle import PandaJungle
 from panda import Panda
 
-PANDA_UNDER_TEST = Panda.HW_TYPE_UNO
+PANDA_UNDER_TEST = Panda.HW_TYPE_BLACK_PANDA
 
 panda_jungle = PandaJungle()
 
 def silent_panda_connect():
   with open(os.devnull, "w") as devnull:
     with contextlib.redirect_stdout(devnull):
-      panda = Panda()
+        while True:
+            try:
+                panda = Panda()
+                break
+            except:
+                time.sleep(1)
   return panda
 
 def reboot_panda(harness_orientation=PandaJungle.HARNESS_ORIENTATION_NONE, ignition=False):
