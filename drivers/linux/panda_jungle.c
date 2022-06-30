@@ -20,9 +20,9 @@
 #include <linux/version.h>
 
 /* vendor and product id */
-#define PANDA_MODULE_NAME "panda"
+#define PANDA_MODULE_NAME "panda_jungle"
 #define PANDA_VENDOR_ID 0XBBAA
-#define PANDA_PRODUCT_ID 0XDDCC
+#define PANDA_PRODUCT_ID 0XDDCF
 
 #define PANDA_MAX_TX_URBS 20
 #define PANDA_CTX_FREE PANDA_MAX_TX_URBS
@@ -544,7 +544,7 @@ static int panda_usb_probe(struct usb_interface *intf,
 
     err = register_candev(netdev);
     if (err) {
-      netdev_err(netdev, "couldn't register PANDA CAN device: %d\n", err);
+      netdev_err(netdev, "couldn't register panda_jungle CAN device: %d\n", err);
       free_candev(priv_inf->netdev);
       goto cleanup_candev;
     }
@@ -564,7 +564,7 @@ static int panda_usb_probe(struct usb_interface *intf,
     goto cleanup_candev;
   }
 
-  dev_info(&intf->dev, "Comma.ai Panda CAN controller connected\n");
+  dev_info(&intf->dev, "Panda_Jungle CAN controller connected\n");
 
   return 0;
 
