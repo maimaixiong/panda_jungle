@@ -20,6 +20,39 @@
 
 #include "drivers/can.h"
 
+int test_send_bus(int bus);
+
+static uint32_t bus_cnt[3] = {0, 0, 0};
+
+int test_send_bus(int bus)
+{
+
+    CAN_FIFOMailBox_TypeDef to_push;
+
+	if( ignition == 0 ) return -1;
+
+	//set id
+    to_push.RIR =  (0x520+bus)<<21U | 1U;
+
+	//set dlc
+    to_push.RDTR &= (uint32_t)0xFFFFFFF0;
+    to_push.RDTR |= 8;
+
+
+	//set data
+    to_push.RDLR = 't'|'e'<<8U | 's'<<16U | 't'<<24U;
+    to_push.RDHR = bus_cnt[bus];
+
+    can_send(&to_push, bus);
+	bus_cnt[bus]++;
+
+  	puts("test_send_bus:"); puth(bus); puts(" | }"), puth(bus_cnt[bus]), puts("\n");
+	return 0;
+}
+
+
+
+
 // ********************* Serial debugging *********************
 
 void debug_ring_callback() {
@@ -67,7 +100,7 @@ void usb_cb_ep3_out(void *usbdata, int len, bool hardwired) {
     to_push.RDHR = d32[dpkt + 3];
     to_push.RDLR = d32[dpkt + 2];
     to_push.RDTR = d32[dpkt + 1];
-    to_push.RIR = d32[dpkt];
+    to_push.RIR =  d32[dpkt];
 
     uint8_t bus_number = (to_push.RDTR >> 4) & CAN_BUS_NUM_MASK;
     can_send(&to_push, bus_number);
@@ -232,6 +265,14 @@ void TIM3_IRQHandler(void) {
 
   if (TIM3->SR != 0) {
     can_live = pending_can_live;
+
+    if (tcnt % 10 == 0) {
+		test_send_bus(0);
+	}
+
+    if (tcnt % 10 == 5) {
+		test_send_bus(1);
+	}
 
     // reset this every 10 seconds
     if (tcnt % 100 == 0) {
