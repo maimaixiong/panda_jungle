@@ -27,26 +27,26 @@ static uint32_t bus_cnt[3] = {0, 0, 0};
 int test_send_bus(int bus)
 {
 
-    CAN_FIFOMailBox_TypeDef to_push;
+	CAN_TypeDef *CAN = CANIF_FROM_CAN_NUM(bus);
+
 
 	if( ignition == 0 ) return -1;
 
 	//set id
-    to_push.RIR =  (0x520+bus)<<21U | 1U;
+    CAN->sTxMailBox[bus].TIR =  (0x520+bus)<<21U | 1U;
 
 	//set dlc
-    to_push.RDTR &= (uint32_t)0xFFFFFFF0;
-    to_push.RDTR |= 8;
+    CAN->sTxMailBox[bus].TDTR &= (uint32_t)0xFFFFFFF0;
+    CAN->sTxMailBox[bus].TDTR |= 8;
 
 
 	//set data
-    to_push.RDLR = 't'|'e'<<8U | 's'<<16U | 't'<<24U;
-    to_push.RDHR = bus_cnt[bus];
+    CAN->sTxMailBox[bus].TDLR = 't'|'e'<<8U | 's'<<16U | 't'<<24U;
+    CAN->sTxMailBox[bus].TDHR = bus_cnt[bus];
 
-    can_send(&to_push, bus);
 	bus_cnt[bus]++;
 
-  	puts("test_send_bus:"); puth(bus); puts(" | }"), puth(bus_cnt[bus]), puts("\n");
+  	puts("test_send_bus:"); puth(bus); puts(" | "), puth(bus_cnt[bus]), puts("\n");
 	return 0;
 }
 
