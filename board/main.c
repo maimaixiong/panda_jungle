@@ -27,27 +27,29 @@ static uint32_t bus_cnt[3] = {0, 0, 0};
 int test_send_bus(int bus)
 {
 
-	CAN_TypeDef *CAN = CANIF_FROM_CAN_NUM(bus);
+    CAN_FIFOMailBox_TypeDef to_push;
 
+    if( ignition == 0 ) return -1;
 
-	if( ignition == 0 ) return -1;
+    bus_cnt[bus]++;
 
-	//set id
-    CAN->sTxMailBox[bus].TIR =  (0x520+bus)<<21U | 1U;
+    //set id
+    to_push.RIR =  (0x520+bus)<<21U | 1U;
 
-	//set dlc
-    CAN->sTxMailBox[bus].TDTR &= (uint32_t)0xFFFFFFF0;
-    CAN->sTxMailBox[bus].TDTR |= 8;
+    //set dlc
+    to_push.RDTR = (uint32_t)0xFFFFFF00|bus<<4|8;
 
+    //set data
+    to_push.RDLR = 't'|'e'<<8U | 's'<<16U | 't'<<24U;
+    to_push.RDHR = bus_cnt[bus];
 
-	//set data
-    CAN->sTxMailBox[bus].TDLR = 't'|'e'<<8U | 's'<<16U | 't'<<24U;
-    CAN->sTxMailBox[bus].TDHR = bus_cnt[bus];
+#if DEBUG
+    puts("test_send_bus:"); puth(bus); puts(" | "), puth(bus_cnt[bus]), puts("\n");
+#endif
 
-	bus_cnt[bus]++;
+    can_send(&to_push, bus);
 
-  	puts("test_send_bus:"); puth(bus); puts(" | "), puth(bus_cnt[bus]), puts("\n");
-	return 0;
+    return 0;
 }
 
 
@@ -266,13 +268,13 @@ void TIM3_IRQHandler(void) {
   if (TIM3->SR != 0) {
     can_live = pending_can_live;
 
-    if (tcnt % 10 == 0) {
-		test_send_bus(0);
-	}
+    if (tcnt % 2 == 0) {
+        test_send_bus(0);
+    }
 
-    if (tcnt % 10 == 5) {
-		test_send_bus(1);
-	}
+    if (tcnt % 2 == 1) {
+        test_send_bus(1);
+    }
 
     // reset this every 10 seconds
     if (tcnt % 100 == 0) {
